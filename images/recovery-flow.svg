@@ -14,5 +14,4 @@
 <text x="830" y="174" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#57606a">New VMID</text><line x1="930" y1="157" x2="952" y2="157" stroke="#24292f" stroke-width="2"/>
 <polygon points="952,157 942,151 942,163" fill="#24292f"/><rect x="960" y="120" width="200" height="74" rx="12" fill="#f6f8fa" stroke="#57606a" stroke-width="2"/>
 <text x="1060" y="151" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#24292f">Validate</text>
-<text x="1060" y="174" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#57606a">OS / App / Data</text><text x="40" y="274" font-family="Arial, sans-serif" font-size="14" fill="#57606a">Illustrative lab diagram - add real screenshots after an actual recovery test.</text>
-</svg>
+<text x="1060" y="174" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#57606a">OS / App / Data</text></svg>
