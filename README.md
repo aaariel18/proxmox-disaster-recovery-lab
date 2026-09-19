@@ -1,16 +1,31 @@
 # Proxmox Backup & Disaster Recovery Lab
+### Panduan Praktis Backup, Troubleshooting, Restore, dan Recovery untuk Pemula
 
-Practical implementation of **backup, verification, troubleshooting, restore, and service recovery** using **Proxmox VE (PVE)** and **Proxmox Backup Server (PBS)**.
+Repository ini membahas implementasi **backup dan disaster recovery** menggunakan **Proxmox VE (PVE)** dan **Proxmox Backup Server (PBS)**.
 
-> This repository is a technical lab / portfolio project. It does not represent the production infrastructure of any specific company. RPO/RTO results should only be filled after a real recovery test.
+Saya sengaja menulis dokumentasi ini dengan gaya bilingual: penjelasan utama menggunakan Bahasa Indonesia, sementara istilah teknis tetap menggunakan English. Tujuannya sederhana: supaya lebih mudah dipahami oleh pemula di Indonesia, tetapi tetap terbiasa dengan istilah yang memang dipakai di dunia kerja dan dokumentasi resmi.
+
+> **Catatan:** repository ini adalah technical lab / portfolio project. Bukan dokumentasi infrastruktur production perusahaan tertentu.
 
 ![Architecture](images/architecture.svg)
 
-## Why this lab exists
+---
 
-A backup job that finishes successfully is not the same as a recoverable system.
+## Kenapa lab ini dibuat? / Why this lab exists
 
-The goal of this lab is to demonstrate a complete recovery lifecycle:
+Backup yang selesai dengan status **OK** belum otomatis berarti sistem aman.
+
+Masalah sebenarnya muncul ketika VM rusak, server gagal boot, storage bermasalah, atau konfigurasi salah. Pada kondisi itu kita baru tahu apakah backup memang bisa dipakai untuk memulihkan layanan.
+
+Karena itu fokus lab ini bukan sekadar:
+
+> "Backup berhasil dibuat."
+
+tetapi:
+
+> **"Kalau sistem gagal, apakah saya bisa memulihkannya sampai service berjalan lagi?"**
+
+Alur yang digunakan:
 
 ```text
 Backup
@@ -19,18 +34,16 @@ Backup
   -> Troubleshoot
   -> Select Known-Good Restore Point
   -> Restore to Isolated VM
-  -> Validate OS / Network / App / Data
+  -> Validate OS / Network / Application / Data
   -> Production Cutover
   -> Record Result
 ```
 
-The key question is:
-
-> **Can the system actually be restored and validated when something goes wrong?**
+**English takeaway:** A backup is useful only when it can be restored and validated.
 
 ---
 
-## Reference Architecture
+## Arsitektur / Reference Architecture
 
 ```mermaid
 flowchart LR
@@ -52,26 +65,31 @@ flowchart LR
     C --> P[Return Service to Production]
 ```
 
-The backup infrastructure should remain available even when the original hypervisor is unavailable.
+Konsep dasarnya adalah memisahkan **production compute** dan **backup infrastructure** sebisa mungkin.
+
+Kalau host Proxmox utama rusak, backup idealnya tetap tersedia di PBS sehingga VM bisa dipulihkan ke host lain.
 
 ---
 
-## Lab Objectives
+## Tujuan Lab / Lab Objectives
 
-- Protect critical virtual machines with scheduled backup jobs.
-- Keep backup storage separated from production compute where possible.
-- Verify backup integrity.
-- Diagnose incidents before restoring.
-- Restore into an isolated recovery VM first.
-- Validate operating system, network, application, and data.
-- Document recovery evidence.
-- Measure actual RPO and RTO after a real test.
+Lab ini digunakan untuk mempelajari dan mendokumentasikan:
+
+- scheduled backup untuk VM penting;
+- integrasi Proxmox VE dengan Proxmox Backup Server;
+- backup verification;
+- troubleshooting sebelum melakukan restore;
+- restore ke VM terpisah;
+- isolasi recovery VM agar tidak bentrok dengan production;
+- validasi OS, network, application, dan data;
+- konsep **RPO (Recovery Point Objective)** dan **RTO (Recovery Time Objective)**;
+- dokumentasi hasil recovery.
 
 ---
 
-## Adding Proxmox Backup Server to PVE
+# 1. Menghubungkan Proxmox VE ke Proxmox Backup Server
 
-From the Proxmox VE web interface:
+Di Proxmox VE, buka:
 
 ```text
 Datacenter
@@ -80,7 +98,7 @@ Datacenter
   -> Proxmox Backup Server
 ```
 
-Typical fields:
+Field yang biasanya dibutuhkan:
 
 ```text
 ID          : pbs-dr
@@ -90,20 +108,35 @@ Datastore   : <datastore-name>
 Fingerprint : <TLS-fingerprint>
 ```
 
-Basic storage checks:
+Untuk mengecek status storage dari shell PVE:
 
 ```bash
 pvesm status
+```
+
+atau khusus PBS:
+
+```bash
 pvesm status --storage pbs-dr
 ```
 
-If the storage is not active, check network reachability, credentials/tokens, TLS fingerprint, firewall rules, datastore availability, and DNS/hostname resolution before attempting recovery.
+Kalau status PBS tidak aktif, jangan langsung menyimpulkan backup rusak. Cek lebih dulu:
+
+- koneksi network ke PBS;
+- DNS / hostname resolution;
+- username, password, atau API token;
+- TLS fingerprint;
+- firewall;
+- datastore PBS;
+- kapasitas storage.
+
+**English takeaway:** Verify connectivity and storage health before attempting a restore.
 
 ---
 
-## Backup Job
+# 2. Membuat Backup Job
 
-Create a scheduled job from:
+Menu:
 
 ```text
 Datacenter
@@ -111,24 +144,32 @@ Datacenter
   -> Add
 ```
 
-Example policy:
+Contoh konfigurasi:
 
 ```text
 Storage      : pbs-dr
 Mode         : Snapshot
 Selection    : Critical VMs
-Schedule     : According to business requirement
-Retention    : According to backup policy
-Verification : Scheduled on PBS
+Schedule     : sesuai kebutuhan
+Retention    : sesuai backup policy
+Verification : dijadwalkan di PBS
 ```
 
-A completed backup task is only one part of the recovery process.
+Saya menggunakan istilah **critical VMs** untuk VM yang kalau mati akan langsung mengganggu operasional, misalnya:
+
+- database server;
+- application server;
+- authentication service;
+- Windows Server;
+- service internal penting.
+
+Frekuensi backup jangan hanya berdasarkan kebiasaan. Tentukan berdasarkan seberapa banyak data yang masih bisa ditoleransi untuk hilang.
 
 ---
 
-## Backup Verification
+# 3. Backup Verification
 
-Use this model:
+Ini bagian yang sering terlewat.
 
 ```text
 Backup exists
@@ -136,7 +177,7 @@ Backup exists
 System is recoverable
 ```
 
-A better process is:
+Alur yang lebih aman:
 
 ```text
 Backup
@@ -145,29 +186,33 @@ Backup
   -> OS Validation
   -> Application Validation
   -> Data Validation
-  -> Recovery Evidence
 ```
 
-Failed verification tasks must be investigated before relying on the restore point.
+Kalau verification gagal, restore point tersebut jangan langsung dianggap aman.
+
+**Simple rule:** backup yang belum pernah diuji restore masih punya risiko.
 
 ---
 
-## Troubleshooting Before Restore
+# 4. Troubleshooting Sebelum Restore
 
 ![Troubleshooting Flow](images/troubleshooting-flow.svg)
 
-Do not immediately restore a VM just because a service is unavailable.
+Saya tidak menyarankan langsung restore hanya karena aplikasi tidak bisa dibuka.
 
-### Application layer
+Cari dulu layer masalahnya.
 
-Check:
-- service status;
-- recent configuration changes;
-- application logs;
-- database connection;
-- dependency failures.
+### Application Layer
 
-### Guest OS layer
+Periksa:
+
+- service aplikasi;
+- application log;
+- koneksi ke database;
+- perubahan konfigurasi terakhir;
+- dependency yang gagal.
+
+### Guest OS Layer
 
 Windows:
 
@@ -188,101 +233,135 @@ ip route
 df -h
 ```
 
-### VM layer
+### VM Layer
 
 ```bash
 qm status <VMID>
 qm config <VMID>
 ```
 
-Check boot disk, boot order, CPU/RAM, bridge, NIC, VLAN tag, and VM configuration.
+Periksa:
 
-### Storage layer
+- boot disk;
+- boot order;
+- CPU / RAM;
+- network interface;
+- bridge;
+- VLAN;
+- konfigurasi VM.
+
+### Storage Layer
 
 ```bash
 pvesm status
 ```
 
-Check unavailable storage, full datastore, I/O errors, missing mounts, and underlying disk issues.
+Cari kemungkinan:
 
-### Host layer
+- storage offline;
+- disk penuh;
+- mount hilang;
+- I/O error;
+- underlying disk bermasalah.
 
-Check resource pressure, network bridge configuration, cluster state if applicable, Proxmox services, and physical hardware alerts.
+### Host Layer
+
+Periksa kondisi node Proxmox:
+
+- resource usage;
+- network bridge;
+- service Proxmox;
+- cluster status bila menggunakan cluster;
+- warning hardware.
+
+**English takeaway:** Troubleshoot first. Restore only when recovery is actually required.
 
 ---
 
-## Disaster Recovery Workflow
+# 5. Disaster Recovery Workflow
 
 ![Recovery Flow](images/recovery-flow.svg)
 
-### Step 1 - Detect and contain
+## Step 1 — Detect & Contain
 
-If compromise, ransomware, or unknown corruption is suspected:
+Kalau ada dugaan corruption, ransomware, atau compromise:
 
-- isolate the affected VM;
-- preserve relevant logs;
-- establish the incident timeline;
-- avoid reconnecting it to production until investigated.
+- isolasi VM;
+- jangan langsung sambungkan lagi ke production network;
+- simpan log yang relevan;
+- tentukan kira-kira kapan masalah mulai terjadi.
 
-### Step 2 - Select a known-good backup
+## Step 2 — Select a Known-Good Backup
 
-Do **not** automatically choose the newest backup.
+Jangan otomatis memilih backup paling baru.
 
-Consider:
+Kenapa?
+
+Kalau masalah sudah terjadi sebelum backup terakhir, backup terbaru bisa ikut membawa kerusakan tersebut.
+
+Pertimbangkan:
+
 - incident timeline;
 - backup timestamp;
 - verification status;
-- application consistency;
-- business RPO.
+- kondisi aplikasi;
+- kebutuhan RPO.
 
-A newer backup may already contain the failure or compromise.
+## Step 3 — Restore ke VM ID Berbeda
 
-### Step 3 - Restore to another VM ID
+Untuk recovery test, lebih aman restore ke VM ID baru.
 
-A safer lab method is to restore to an alternate VM ID rather than overwrite the failed VM immediately.
+Contoh:
 
 ```text
 Production VM : 101
 Recovery VM   : 901
 ```
 
-The recovery VM should remain isolated at first.
+Tujuannya agar VM asli tidak langsung ditimpa.
 
-Be aware that a restored VM can contain the same hostname, IP address, routes, application identity, and other settings as production.
+Recovery VM sebaiknya tetap terisolasi lebih dulu karena hasil restore bisa membawa:
 
-### Step 4 - Validate
+- hostname yang sama;
+- IP address yang sama;
+- static route yang sama;
+- application identity yang sama.
 
-Recovery checklist:
+Kalau VM production dan recovery hidup bersamaan dengan IP yang sama, bisa terjadi conflict.
 
-- [ ] VM boots normally
-- [ ] OS has no critical boot errors
-- [ ] Filesystem is accessible
-- [ ] Network configuration is correct
-- [ ] No duplicate IP conflict
-- [ ] Required services are running
-- [ ] Application starts successfully
-- [ ] Database is accessible
-- [ ] Important data is present
-- [ ] Authentication works
-- [ ] Logs reviewed
-- [ ] Functional user/service test passes
+## Step 4 — Validate
 
-### Step 5 - Production cutover
+Checklist setelah restore:
 
-Only after validation:
+- [ ] VM berhasil boot
+- [ ] Tidak ada critical boot error
+- [ ] Filesystem dapat diakses
+- [ ] Network configuration benar
+- [ ] Tidak ada duplicate IP
+- [ ] Service penting berjalan
+- [ ] Application dapat dibuka
+- [ ] Database dapat diakses
+- [ ] Data penting tersedia
+- [ ] Authentication bekerja
+- [ ] Log diperiksa
+- [ ] Functional test berhasil
 
-1. stop or isolate the failed production VM;
-2. apply production network settings to the recovered VM if required;
-3. start the recovered service;
-4. test from the user/application side;
-5. monitor logs and service health;
-6. record actual recovery time.
+## Step 5 — Production Cutover
+
+Setelah semua valid:
+
+1. stop atau isolate VM production yang bermasalah;
+2. sesuaikan network recovery VM;
+3. start service;
+4. lakukan user/application test;
+5. monitor log;
+6. catat waktu recovery.
 
 ---
 
-## Host Failure Scenario
+# 6. Kalau Proxmox Host Rusak
 
-If the Proxmox VE host fails completely:
+Kalau yang gagal bukan VM tetapi host PVE:
 
 ```text
 Failed PVE Host
@@ -291,45 +370,49 @@ Failed PVE Host
 Replacement / Recovery Host
       |
       +--> Install Proxmox VE
-      +--> Configure management network
-      +--> Configure bridge / VLAN
-      +--> Configure target storage
+      +--> Configure Management Network
+      +--> Configure Bridge / VLAN
+      +--> Configure Storage
       +--> Reconnect PBS
       |
       v
 Restore Critical VM
       |
       v
-Validate OS / Network / App / Data
+Validate OS / Network / Application / Data
       |
       v
 Return Service to Production
 ```
 
-This is one reason for keeping backup infrastructure independent from the production hypervisor.
+Di sinilah manfaat PBS terpisah terasa. Backup tetap bisa digunakan walaupun hypervisor awal sudah tidak tersedia.
 
 ---
 
-## RPO and RTO
+# 7. RPO dan RTO untuk Pemula
 
-### Recovery Point Objective (RPO)
+## RPO — Recovery Point Objective
 
-RPO is the maximum acceptable amount of data loss measured in time.
+RPO menjawab:
 
-Example only:
+> **Seberapa banyak data yang masih bisa kita terima untuk hilang?**
+
+Contoh sederhana:
 
 ```text
-Backup every 24 hours
-=> worst-case restore point may be up to 24 hours old
+Backup setiap 24 jam
+=> secara teori bisa kehilangan perubahan data hingga 24 jam
 ```
 
-Actual values must come from business requirements.
+Bukan berarti 24 jam selalu bagus. Nilainya harus mengikuti kebutuhan bisnis.
 
-### Recovery Time Objective (RTO)
+## RTO — Recovery Time Objective
 
-RTO is the target time to restore service after disruption.
+RTO menjawab:
 
-Measure the actual flow:
+> **Berapa lama service boleh down sebelum harus kembali berjalan?**
+
+Yang diukur misalnya:
 
 ```text
 Incident detected
@@ -340,13 +423,77 @@ Incident detected
   -> Service operational
 ```
 
-Do not claim an RTO until a real recovery test has been timed.
+Untuk portfolio, saya tidak menuliskan angka RTO palsu. Angka baru dicatat setelah recovery test benar-benar dilakukan.
 
 ---
 
-## Recovery Test Result Template
+# 8. Official Proxmox Interface References
 
-Fill this only after an actual test:
+Gambar di bagian ini berasal dari **dokumentasi resmi Proxmox**. Tujuannya untuk membantu pembaca mengenali menu dan tampilan yang dibahas.
+
+## Proxmox VE — Backup Job Overview
+
+![Proxmox VE Backup Job Overview](https://pve.proxmox.com/pve-docs/images/screenshot/gui-cluster-backup-overview.png)
+
+Source: [Proxmox VE — Backup and Restore](https://pve.proxmox.com/pve-docs/chapter-vzdump.html)
+
+Di halaman ini administrator dapat melihat dan mengelola backup job pada level Datacenter.
+
+---
+
+## Proxmox VE — Backup Job Configuration
+
+![Proxmox VE Backup Job General Settings](https://pve.proxmox.com/pve-docs/images/screenshot/gui-cluster-backup-edit-01-general.png)
+
+Source: [Proxmox VE — Backup Jobs](https://pve.proxmox.com/pve-docs/chapter-vzdump.html#vzdump_jobs)
+
+Di sinilah storage target, schedule, mode, dan guest selection dikonfigurasi.
+
+---
+
+## Proxmox VE — Advanced Backup Settings
+
+![Proxmox VE Advanced Backup Settings](https://pve.proxmox.com/pve-docs/images/screenshot/gui-cluster-backup-edit-04-advanced.png)
+
+Source: [Proxmox VE Documentation](https://pve.proxmox.com/pve-docs/)
+
+Menu advanced digunakan ketika kita perlu menyesuaikan behavior dan parameter tambahan backup.
+
+---
+
+## Proxmox Backup Server — Datastore Summary
+
+![Proxmox Backup Server Datastore Summary](https://pbs.proxmox.com/docs/_images/pbs-gui-datastore-summary.png)
+
+Source: [Proxmox Backup Server Documentation](https://pbs.proxmox.com/docs/gui.html)
+
+Datastore adalah lokasi tempat backup disimpan di PBS. Dari sini administrator bisa memonitor penggunaan storage dan aktivitas backup.
+
+---
+
+## Proxmox Backup Server — Backup Content
+
+![Proxmox Backup Server Datastore Content](https://pbs.proxmox.com/docs/_images/pbs-gui-datastore-content.png)
+
+Source: [Proxmox Backup Server — Storage](https://pbs.proxmox.com/docs/storage.html)
+
+Bagian **Content** digunakan untuk melihat backup group dan restore point yang tersedia.
+
+---
+
+## Proxmox Backup Server — Verification Job
+
+![Proxmox Backup Server Verification Job](https://pbs.proxmox.com/docs/_images/pbs-gui-datastore-verifyjob-add.png)
+
+Source: [Proxmox Backup Server — Verification](https://pbs.proxmox.com/docs/maintenance.html#verification)
+
+Verification membantu memastikan data backup masih dapat dibaca dan konsisten sebelum dibutuhkan pada kondisi darurat.
+
+---
+
+# 9. Recovery Test Result Template
+
+Kalau nanti lab benar-benar dijalankan, hasilnya dicatat seperti ini:
 
 ```text
 Backup timestamp       :
@@ -364,160 +511,22 @@ Notes:
 -
 ```
 
-A successful backup is not enough. A meaningful recovery result should show that the backup was restored and the service was validated.
+Jangan isi angka hanya supaya terlihat lengkap. Lebih baik kosong daripada mengklaim hasil yang tidak pernah diuji.
 
 ---
 
-
----
-
-## Official Proxmox Interface References
-
-The screenshots below come from the **official Proxmox documentation** and are included as interface references for the backup and disaster-recovery workflow described in this repository.
-
-### 1. Proxmox VE — Datacenter / Cluster View
-
-![Proxmox VE Datacenter Summary](https://pve.proxmox.com/pve-docs/images/screenshot/gui-datacenter-summary.png)
-
-Source: [Proxmox VE Documentation](https://pve.proxmox.com/pve-docs/)
-
-This view represents the central Proxmox VE management interface where nodes, virtual machines, storage, backup jobs, and cluster-level settings are managed.
-
-### 2. Proxmox VE — Backup Job Overview
-
-![Proxmox VE Backup Job Overview](https://pve.proxmox.com/pve-docs/images/screenshot/gui-cluster-backup-overview.png)
-
-Source: [Proxmox VE — Backup and Restore](https://pve.proxmox.com/pve-docs/chapter-vzdump.html)
-
-Datacenter-wide backup jobs are managed from the backup section. This is where an administrator defines the protected guests, target storage, schedule, mode, and retention-related options.
-
-### 3. Proxmox VE — Backup Job Configuration
-
-![Proxmox VE Backup Job General Settings](https://pve.proxmox.com/pve-docs/images/screenshot/gui-cluster-backup-edit-01-general.png)
-
-Source: [Proxmox VE — Backup Jobs](https://pve.proxmox.com/pve-docs/chapter-vzdump.html#vzdump_jobs)
-
-The backup configuration window is used to select target storage, backup mode, guest selection, scheduling, and other job parameters.
-
-### 4. Proxmox VE — Advanced Backup Settings
-
-![Proxmox VE Advanced Backup Settings](https://pve.proxmox.com/pve-docs/images/screenshot/gui-cluster-backup-edit-04-advanced.png)
-
-Source: [Proxmox VE — Backup Jobs / Advanced Settings](https://pve.proxmox.com/pve-docs/chapter-vzdump.html#vzdump_jobs)
-
-Advanced settings are useful when tuning backup behavior, including performance-related options.
-
-### 5. Proxmox Backup Server — Datastore Summary
-
-![Proxmox Backup Server Datastore Summary](https://pbs.proxmox.com/docs/_images/pbs-gui-datastore-summary.png)
-
-Source: [Proxmox Backup Server Documentation — GUI](https://pbs.proxmox.com/docs/gui.html)
-
-The datastore summary provides an operational view of backup storage usage, backup counts, transfer rate, IOPS, and storage activity.
-
-### 6. Proxmox Backup Server — Backup Content and Verification State
-
-![Proxmox Backup Server Datastore Content](https://pbs.proxmox.com/docs/_images/pbs-gui-datastore-content.png)
-
-Source: [Proxmox Backup Server Documentation — Datastore](https://pbs.proxmox.com/docs/storage.html)
-
-The content view lists backup groups and restore points and exposes the verification state of stored backups. This is important when selecting a known-good restore point during recovery.
-
-### 7. Proxmox Backup Server — Verification Job
-
-![Proxmox Backup Server Verification Job](https://pbs.proxmox.com/docs/_images/pbs-gui-datastore-verifyjob-add.png)
-
-Source: [Proxmox Backup Server Documentation — Verification](https://pbs.proxmox.com/docs/maintenance.html#verification)
-
-Verification jobs are used to periodically confirm that backup data remains readable and consistent before it is needed for an emergency restore.
-
-### Recovery Process in Practice
-
-During a real incident, the interface workflow is normally combined with troubleshooting and recovery validation:
-
-```text
-PVE Incident / VM Failure
-        |
-        v
-Troubleshoot VM, OS, Storage, Network
-        |
-        v
-Open PBS / Backup Storage
-        |
-        v
-Select a Known-Good Restore Point
-        |
-        v
-Restore VM
-        |
-        v
-Keep Recovery VM Isolated
-        |
-        v
-Validate OS / Network / Application / Data
-        |
-        v
-Return Service to Production
-```
-
-For restore operations, Proxmox VE supports restoring QEMU virtual-machine backups with `qmrestore`, while container backups can be restored with `pct restore`. Recovery should be validated before the restored workload is returned to production.
-
----
-
-## Screenshot Evidence Plan
-
-The interface screenshots used above are sourced from the **official Proxmox documentation**.
-
-If this lab is later executed on a real environment, additional screenshots can be placed under `images/screenshots/` as execution evidence.
-
-Recommended evidence:
-
-1. PVE dashboard
-2. PBS storage integration
-3. Backup job configuration
-4. Successful backup task
-5. PBS datastore backup list
-6. Verification job
-7. Restore dialog
-8. Recovery VM boot
-9. Service/application validation
-10. Final task log / successful recovery evidence
-
-Before publishing screenshots, redact:
-- passwords/tokens;
-- API keys;
-- public IP addresses;
-- sensitive internal domains;
-- customer/company data.
-
----
-
-## Repository Structure
-
-```text
-proxmox-disaster-recovery-lab/
-├── README.md
-├── docs/
-│   ├── backup-policy.md
-│   ├── disaster-recovery-plan.md
-│   ├── recovery-runbook.md
-│   └── troubleshooting.md
-└── images/
-    ├── architecture.svg
-    ├── recovery-flow.svg
-    ├── troubleshooting-flow.svg
-    └── README.md
-```
-
-## Documentation
+## Dokumentasi Tambahan / Additional Documentation
 
 - [Backup Policy](docs/backup-policy.md)
 - [Disaster Recovery Plan](docs/disaster-recovery-plan.md)
 - [Recovery Runbook](docs/recovery-runbook.md)
 - [Troubleshooting Guide](docs/troubleshooting.md)
 
+---
+
 ## Key Takeaway
 
+> **Backup bukan hanya soal punya salinan data. Yang penting adalah apakah sistem benar-benar bisa dipulihkan.**  
 > **A backup is only valuable when it can be restored and validated.**
 
 ### Skills Demonstrated
@@ -531,4 +540,4 @@ Proxmox VE · Proxmox Backup Server · Virtualization · Backup & Recovery · Di
 
 ## Disclaimer
 
-This repository is for technical demonstration and portfolio purposes. Configuration values, schedules, RPO/RTO targets, and recovery procedures must be adapted to the real organization's requirements, risk profile, infrastructure, and change-management process.
+Dokumentasi ini dibuat untuk pembelajaran dan portfolio. Konfigurasi, schedule, retention, RPO, RTO, dan prosedur recovery pada environment nyata harus mengikuti kebutuhan bisnis, kebijakan keamanan, kapasitas infrastruktur, dan change-management perusahaan.
