@@ -371,58 +371,104 @@ A successful backup is not enough. A meaningful recovery result should show that
 
 ---
 
-## Simulated Proxmox UI Walkthrough
+## Official Proxmox Interface References
 
-> The following visuals are **SIMULATED LAB MOCKUPS** created for this portfolio. They illustrate the expected workflow and are **not** screenshots from a real production or lab environment.
+The screenshots below come from the **official Proxmox documentation** and are included as interface references for the backup and disaster-recovery workflow described in this repository.
 
-### 1. Proxmox VE Dashboard
+### 1. Proxmox VE — Datacenter / Cluster View
 
-![Simulated PVE Dashboard](images/mockups/01-pve-dashboard.svg)
+![Proxmox VE Datacenter Summary](https://pve.proxmox.com/pve-docs/images/screenshot/gui-datacenter-summary.png)
 
-This view illustrates a simple virtualization environment containing Windows, application, and database virtual machines together with a separate backup server.
+Source: [Proxmox VE Documentation](https://pve.proxmox.com/pve-docs/)
 
-### 2. Proxmox Backup Server Integration
+This view represents the central Proxmox VE management interface where nodes, virtual machines, storage, backup jobs, and cluster-level settings are managed.
 
-![Simulated PBS Storage Integration](images/mockups/02-pbs-storage-integration.svg)
+### 2. Proxmox VE — Backup Job Overview
 
-The backup server is represented as a dedicated `pbs-dr` storage target connected to Proxmox VE.
+![Proxmox VE Backup Job Overview](https://pve.proxmox.com/pve-docs/images/screenshot/gui-cluster-backup-overview.png)
 
-### 3. Backup Job Configuration
+Source: [Proxmox VE — Backup and Restore](https://pve.proxmox.com/pve-docs/chapter-vzdump.html)
 
-![Simulated Backup Job](images/mockups/03-backup-job.svg)
+Datacenter-wide backup jobs are managed from the backup section. This is where an administrator defines the protected guests, target storage, schedule, mode, and retention-related options.
 
-The example job uses snapshot mode and protects selected critical VMs. The schedule and retention policy shown are illustrative only.
+### 3. Proxmox VE — Backup Job Configuration
 
-### 4. Backup Task Result
+![Proxmox VE Backup Job General Settings](https://pve.proxmox.com/pve-docs/images/screenshot/gui-cluster-backup-edit-01-general.png)
 
-![Simulated Backup Task Result](images/mockups/04-backup-success.svg)
+Source: [Proxmox VE — Backup Jobs](https://pve.proxmox.com/pve-docs/chapter-vzdump.html#vzdump_jobs)
 
-This mock task view demonstrates the expected stages of a successful backup workflow. The status values are explicitly simulated and do not represent an executed backup.
+The backup configuration window is used to select target storage, backup mode, guest selection, scheduling, and other job parameters.
 
-### 5. Backup Verification
+### 4. Proxmox VE — Advanced Backup Settings
 
-![Simulated Verification Job](images/mockups/05-verification.svg)
+![Proxmox VE Advanced Backup Settings](https://pve.proxmox.com/pve-docs/images/screenshot/gui-cluster-backup-edit-04-advanced.png)
 
-A backup should not be trusted based only on job completion. Verification adds an integrity-checking stage before a restore point is considered usable.
+Source: [Proxmox VE — Backup Jobs / Advanced Settings](https://pve.proxmox.com/pve-docs/chapter-vzdump.html#vzdump_jobs)
 
-### 6. Safe Restore to an Isolated VM
+Advanced settings are useful when tuning backup behavior, including performance-related options.
 
-![Simulated Restore Dialog](images/mockups/06-restore-dialog.svg)
+### 5. Proxmox Backup Server — Datastore Summary
 
-Instead of overwriting VM 101 immediately, this recovery pattern restores the known-good backup as VM 901 and keeps it isolated from the production network.
+![Proxmox Backup Server Datastore Summary](https://pbs.proxmox.com/docs/_images/pbs-gui-datastore-summary.png)
 
-### 7. Recovery Validation
+Source: [Proxmox Backup Server Documentation — GUI](https://pbs.proxmox.com/docs/gui.html)
 
-![Simulated Recovery Validation](images/mockups/07-recovery-validation.svg)
+The datastore summary provides an operational view of backup storage usage, backup counts, transfer rate, IOPS, and storage activity.
 
-The final phase validates the virtual machine, operating system, network, application, and data before any production cutover.
+### 6. Proxmox Backup Server — Backup Content and Verification State
 
+![Proxmox Backup Server Datastore Content](https://pbs.proxmox.com/docs/_images/pbs-gui-datastore-content.png)
+
+Source: [Proxmox Backup Server Documentation — Datastore](https://pbs.proxmox.com/docs/storage.html)
+
+The content view lists backup groups and restore points and exposes the verification state of stored backups. This is important when selecting a known-good restore point during recovery.
+
+### 7. Proxmox Backup Server — Verification Job
+
+![Proxmox Backup Server Verification Job](https://pbs.proxmox.com/docs/_images/pbs-gui-datastore-verifyjob-add.png)
+
+Source: [Proxmox Backup Server Documentation — Verification](https://pbs.proxmox.com/docs/maintenance.html#verification)
+
+Verification jobs are used to periodically confirm that backup data remains readable and consistent before it is needed for an emergency restore.
+
+### Recovery Process in Practice
+
+During a real incident, the interface workflow is normally combined with troubleshooting and recovery validation:
+
+```text
+PVE Incident / VM Failure
+        |
+        v
+Troubleshoot VM, OS, Storage, Network
+        |
+        v
+Open PBS / Backup Storage
+        |
+        v
+Select a Known-Good Restore Point
+        |
+        v
+Restore VM
+        |
+        v
+Keep Recovery VM Isolated
+        |
+        v
+Validate OS / Network / Application / Data
+        |
+        v
+Return Service to Production
+```
+
+For restore operations, Proxmox VE supports restoring QEMU virtual-machine backups with `qmrestore`, while container backups can be restored with `pct restore`. Recovery should be validated before the restored workload is returned to production.
+
+---
 
 ## Screenshot Evidence Plan
 
-The repository currently includes **clearly labeled simulated UI mockups** under `images/mockups/`. These are illustrative only.
+The interface screenshots used above are sourced from the **official Proxmox documentation**.
 
-For a future real lab, add actual screenshots under `images/screenshots/`.
+If this lab is later executed on a real environment, additional screenshots can be placed under `images/screenshots/` as execution evidence.
 
 Recommended evidence:
 
