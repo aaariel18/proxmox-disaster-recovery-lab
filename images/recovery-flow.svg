@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320">
+<rect width="100%" height="100%" fill="white"/>
+<text x="40" y="55" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#24292f">Disaster Recovery Workflow</text><rect x="40" y="120" width="200" height="74" rx="12" fill="#f6f8fa" stroke="#57606a" stroke-width="2"/>
+<text x="140" y="151" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#24292f">Detect</text>
+<text x="140" y="174" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#57606a">Incident</text><line x1="240" y1="157" x2="262" y2="157" stroke="#24292f" stroke-width="2"/>
+<polygon points="262,157 252,151 252,163" fill="#24292f"/><rect x="270" y="120" width="200" height="74" rx="12" fill="#f6f8fa" stroke="#57606a" stroke-width="2"/>
+<text x="370" y="151" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#24292f">Contain</text>
+<text x="370" y="174" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#57606a">Isolate</text><line x1="470" y1="157" x2="492" y2="157" stroke="#24292f" stroke-width="2"/>
+<polygon points="492,157 482,151 482,163" fill="#24292f"/><rect x="500" y="120" width="200" height="74" rx="12" fill="#f6f8fa" stroke="#57606a" stroke-width="2"/>
+<text x="600" y="151" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#24292f">Select Backup</text>
+<text x="600" y="174" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#57606a">Known-good</text><line x1="700" y1="157" x2="722" y2="157" stroke="#24292f" stroke-width="2"/>
+<polygon points="722,157 712,151 712,163" fill="#24292f"/><rect x="730" y="120" width="200" height="74" rx="12" fill="#f6f8fa" stroke="#57606a" stroke-width="2"/>
+<text x="830" y="151" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#24292f">Restore</text>
+<text x="830" y="174" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#57606a">New VMID</text><line x1="930" y1="157" x2="952" y2="157" stroke="#24292f" stroke-width="2"/>
+<polygon points="952,157 942,151 942,163" fill="#24292f"/><rect x="960" y="120" width="200" height="74" rx="12" fill="#f6f8fa" stroke="#57606a" stroke-width="2"/>
+<text x="1060" y="151" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#24292f">Validate</text>
+<text x="1060" y="174" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#57606a">OS / App / Data</text><text x="40" y="274" font-family="Arial, sans-serif" font-size="14" fill="#57606a">Illustrative lab diagram - add real screenshots after an actual recovery test.</text>
+</svg>
