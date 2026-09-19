@@ -21,3 +21,18 @@ Recommended screenshots:
 10. final recovery evidence
 
 Redact credentials, tokens, public IPs, internal domains, and sensitive data before committing.
+
+
+## Simulated UI Mockups
+
+These files are illustrative portfolio assets and are **not real screenshots**:
+
+- `mockups/01-pve-dashboard.svg`
+- `mockups/02-pbs-storage-integration.svg`
+- `mockups/03-backup-job.svg`
+- `mockups/04-backup-success.svg`
+- `mockups/05-verification.svg`
+- `mockups/06-restore-dialog.svg`
+- `mockups/07-recovery-validation.svg`
+
+All use documentation-only example addresses and visible simulation labels.
