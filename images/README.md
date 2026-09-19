@@ -1,18 +1,27 @@
 # Images
 
-Portfolio-safe diagrams:
+This directory contains supporting diagrams for the disaster-recovery documentation.
+
+Files:
 - `architecture.svg` - PVE/PBS reference architecture
-- `recovery-flow.svg` - disaster recovery workflow
-- `troubleshooting-flow.svg` - layered troubleshooting flow
+- `recovery-flow.svg` - disaster recovery process
+- `troubleshooting-flow.svg` - layered troubleshooting process
 
-## Real Lab Screenshots
-Add a folder named `screenshots/` after executing a real lab.
+## Interface Screenshots
 
-Recommended screenshots:
+The main README uses screenshots served directly from the **official Proxmox documentation** instead of locally fabricated UI screenshots.
+
+Official sources:
+- Proxmox VE documentation: https://pve.proxmox.com/pve-docs/
+- Proxmox Backup Server documentation: https://pbs.proxmox.com/docs/
+
+## Future Real Lab Evidence
+
+If the lab is executed on a real Proxmox environment, create `images/screenshots/` and add:
 1. PVE dashboard
 2. PBS integration
 3. backup job
-4. successful backup log
+4. backup task log
 5. PBS datastore
 6. verification job
 7. restore operation
@@ -20,19 +29,4 @@ Recommended screenshots:
 9. service validation
 10. final recovery evidence
 
-Redact credentials, tokens, public IPs, internal domains, and sensitive data before committing.
-
-
-## Simulated UI Mockups
-
-These files are illustrative portfolio assets and are **not real screenshots**:
-
-- `mockups/01-pve-dashboard.svg`
-- `mockups/02-pbs-storage-integration.svg`
-- `mockups/03-backup-job.svg`
-- `mockups/04-backup-success.svg`
-- `mockups/05-verification.svg`
-- `mockups/06-restore-dialog.svg`
-- `mockups/07-recovery-validation.svg`
-
-All use documentation-only example addresses and visible simulation labels.
+Redact credentials, tokens, public IPs, internal domains, and sensitive business data before committing.
