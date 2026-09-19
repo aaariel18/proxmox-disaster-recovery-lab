@@ -1,12 +1,19 @@
-# Recovery Runbook
+# Recovery Runbook / Panduan Restore
 
-## Record Before Recovery
-- VM ID and name
-- failure time
-- last known-good time
-- backup timestamp
-- verification status
-- incident notes
+Runbook ini dibuat supaya proses recovery tidak dilakukan berdasarkan ingatan saja. Saat incident terjadi, langkah yang sederhana dan terdokumentasi jauh lebih aman.
+
+## Sebelum Mulai / Before Recovery
+
+Catat dulu:
+
+- VM ID dan nama VM;
+- waktu failure;
+- last known-good time;
+- backup timestamp;
+- verification status;
+- incident note.
+
+Jangan langsung overwrite VM asli kalau belum yakin.
 
 ## PVE Checks
 
@@ -16,7 +23,11 @@ qm config <VMID>
 pvesm status
 ```
 
-## Preferred Lab Restore Strategy
+Tujuannya untuk melihat apakah masalah memang membutuhkan restore.
+
+## Preferred Restore Strategy
+
+Untuk lab dan recovery test, pendekatan yang lebih aman:
 
 ```text
 Original VM 101
@@ -37,6 +48,22 @@ Validation
 Production Cutover
 ```
 
+Kenapa VM ID dibedakan?
+
+Supaya VM lama tidak langsung tertimpa dan kita masih punya ruang untuk membandingkan konfigurasi atau melakukan rollback.
+
+## Network Safety
+
+Sebelum menyalakan recovery VM, cek kemungkinan duplicate:
+
+- IP address;
+- hostname;
+- MAC-related configuration;
+- static route;
+- application identity.
+
+Kalau perlu, disconnect NIC lebih dulu.
+
 ## Windows Validation
 
 ```powershell
@@ -45,6 +72,14 @@ Get-WinEvent -LogName System -MaxEvents 50
 ipconfig /all
 route print
 ```
+
+Hal yang diperiksa:
+
+- service penting;
+- error setelah boot;
+- IP dan gateway;
+- route;
+- application dependency.
 
 ## Linux Validation
 
@@ -56,18 +91,29 @@ ip route
 df -h
 ```
 
+Periksa:
+
+- failed service;
+- boot error;
+- network;
+- filesystem;
+- disk space.
+
 ## Final Checklist
+
 - [ ] Correct backup selected
 - [ ] Verification reviewed
 - [ ] Recovery VM isolated
-- [ ] No duplicate IP/hostname conflict
-- [ ] VM boots
+- [ ] Tidak ada duplicate IP / hostname conflict
+- [ ] VM boots normally
 - [ ] OS healthy
 - [ ] Network healthy
 - [ ] Application healthy
 - [ ] Data verified
-- [ ] Authentication verified
+- [ ] Authentication works
 - [ ] User test successful
 - [ ] Production cutover completed
 - [ ] Actual RPO documented
 - [ ] Actual RTO documented
+
+**English takeaway:** Restore first into a safe environment, validate everything, then cut over.
