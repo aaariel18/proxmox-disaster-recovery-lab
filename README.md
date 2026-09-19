@@ -368,9 +368,61 @@ A successful backup is not enough. A meaningful recovery result should show that
 
 ---
 
+
+---
+
+## Simulated Proxmox UI Walkthrough
+
+> The following visuals are **SIMULATED LAB MOCKUPS** created for this portfolio. They illustrate the expected workflow and are **not** screenshots from a real production or lab environment.
+
+### 1. Proxmox VE Dashboard
+
+![Simulated PVE Dashboard](images/mockups/01-pve-dashboard.svg)
+
+This view illustrates a simple virtualization environment containing Windows, application, and database virtual machines together with a separate backup server.
+
+### 2. Proxmox Backup Server Integration
+
+![Simulated PBS Storage Integration](images/mockups/02-pbs-storage-integration.svg)
+
+The backup server is represented as a dedicated `pbs-dr` storage target connected to Proxmox VE.
+
+### 3. Backup Job Configuration
+
+![Simulated Backup Job](images/mockups/03-backup-job.svg)
+
+The example job uses snapshot mode and protects selected critical VMs. The schedule and retention policy shown are illustrative only.
+
+### 4. Backup Task Result
+
+![Simulated Backup Task Result](images/mockups/04-backup-success.svg)
+
+This mock task view demonstrates the expected stages of a successful backup workflow. The status values are explicitly simulated and do not represent an executed backup.
+
+### 5. Backup Verification
+
+![Simulated Verification Job](images/mockups/05-verification.svg)
+
+A backup should not be trusted based only on job completion. Verification adds an integrity-checking stage before a restore point is considered usable.
+
+### 6. Safe Restore to an Isolated VM
+
+![Simulated Restore Dialog](images/mockups/06-restore-dialog.svg)
+
+Instead of overwriting VM 101 immediately, this recovery pattern restores the known-good backup as VM 901 and keeps it isolated from the production network.
+
+### 7. Recovery Validation
+
+![Simulated Recovery Validation](images/mockups/07-recovery-validation.svg)
+
+The final phase validates the virtual machine, operating system, network, application, and data before any production cutover.
+
+
 ## Screenshot Evidence Plan
 
-For a real lab, add screenshots under `images/screenshots/`.
+The repository currently includes **clearly labeled simulated UI mockups** under `images/mockups/`. These are illustrative only.
+
+For a future real lab, add actual screenshots under `images/screenshots/`.
 
 Recommended evidence:
 
