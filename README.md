@@ -541,14 +541,3 @@ Proxmox VE · Proxmox Backup Server · Virtualization · Backup & Recovery · Di
 ## Disclaimer
 
 Dokumentasi ini dibuat untuk pembelajaran dan portfolio. Konfigurasi, schedule, retention, RPO, RTO, dan prosedur recovery pada environment nyata harus mengikuti kebutuhan bisnis, kebijakan keamanan, kapasitas infrastruktur, dan change-management perusahaan.
-
-
----
-
-## Related Networking Article / Artikel Networking
-
-Selain backup & disaster recovery, saya juga menulis catatan mengenai efisiensi konektivitas multi-cabang:
-
-- [Mengurangi Biaya Static IP Antar Cabang dengan Ruijie/Reyee Easy VPN + DDNS](articles/ruijie-easy-vpn-dynamic-ip.md)
-
-Artikel tersebut membahas penggunaan **dynamic public IP, DDNS, Easy VPN/IPsec, centralized cloud management**, serta batasan penting ketika ISP menggunakan **CGNAT**.
