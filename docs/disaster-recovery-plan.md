@@ -1,37 +1,101 @@
-# Disaster Recovery Plan
+# Disaster Recovery Plan / Rencana Pemulihan Bencana
 
-## Objective
-Restore critical virtualized services after VM failure, configuration corruption, storage problems, host failure, or other major disruption.
+Dokumen ini berisi alur sederhana yang bisa dipakai sebagai pegangan saat service virtual di Proxmox mengalami gangguan besar.
 
-## Recovery Priorities
-Example only:
-1. identity/authentication dependencies;
-2. database services;
-3. business application services;
-4. supporting infrastructure;
-5. monitoring/non-critical services.
+## Objective / Tujuan
 
-Actual priority must be based on business impact.
+Memulihkan service penting setelah terjadi:
 
-## Incident Phases
+- VM failure;
+- salah konfigurasi;
+- corruption;
+- storage problem;
+- host failure;
+- incident keamanan;
+- gangguan lain yang membuat service tidak tersedia.
 
-### Detect
-Identify affected systems, failure time, recent changes, and impact.
+## Recovery Priority / Prioritas Pemulihan
 
-### Contain
-For suspected compromise, isolate the VM and preserve relevant evidence.
+Urutan di bawah hanya contoh:
 
-### Diagnose
-Determine whether the fault is in the application, guest OS, VM configuration, storage, network, PVE host, or PBS.
+1. authentication / identity service;
+2. database;
+3. business application;
+4. supporting service;
+5. monitoring dan non-critical service.
 
-### Recover
-Select a verified restore point and recover into an isolated VM when practical.
+Di environment nyata, prioritas harus mengikuti **business impact**, bukan sekadar urutan teknis.
 
-### Validate
-Validate boot, filesystem, networking, application, database, authentication, and user access.
+## Incident Phases / Tahapan Incident
 
-### Cut Over
-Return the service only after validation.
+### 1. Detect
 
-### Review
-Record root cause, restore point, actual RPO, actual RTO, evidence, and follow-up actions.
+Cari tahu:
+
+- service apa yang terdampak;
+- kapan mulai gagal;
+- perubahan terakhir;
+- seberapa luas dampaknya.
+
+### 2. Contain
+
+Kalau ada dugaan compromise atau ransomware:
+
+- isolate VM;
+- jangan langsung reconnect;
+- simpan log penting;
+- hindari perubahan yang bisa menghilangkan evidence.
+
+### 3. Diagnose
+
+Tentukan masalah berada di layer mana:
+
+- application;
+- guest OS;
+- VM configuration;
+- storage;
+- network;
+- PVE host;
+- PBS.
+
+Tujuannya supaya kita tidak melakukan restore kalau masalah sebenarnya hanya service yang berhenti.
+
+### 4. Recover
+
+Kalau restore memang diperlukan:
+
+- pilih backup yang sudah diverifikasi;
+- cek incident timeline;
+- restore ke isolated recovery VM bila memungkinkan.
+
+### 5. Validate
+
+Jangan berhenti setelah VM berhasil boot.
+
+Validasi:
+
+- filesystem;
+- network;
+- service;
+- application;
+- database;
+- authentication;
+- data;
+- user access.
+
+### 6. Cut Over
+
+Baru pindahkan kembali ke production setelah semua validation selesai.
+
+### 7. Review
+
+Setelah incident selesai, catat:
+
+- root cause;
+- backup yang dipakai;
+- actual RPO;
+- actual RTO;
+- kendala selama recovery;
+- tindakan pencegahan berikutnya.
+
+**English takeaway:** Disaster recovery ends when the service is usable again, not when the VM merely boots.
