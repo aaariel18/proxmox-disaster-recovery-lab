@@ -1,0 +1,38 @@
+[
+  {
+    "slug": "proxmox-backup-disaster-recovery",
+    "title": "Backup selesai. Sistem belum tentu siap pulih.",
+    "description": "Alur backup, verifikasi, troubleshooting, dan restore dengan Proxmox VE dan Proxmox Backup Server.",
+    "category": "Infrastruktur",
+    "status": "Technical lab",
+    "url": "https://github.com/aaariel18/proxmox-disaster-recovery-lab",
+    "minutes": 3
+  },
+  {
+    "slug": "ruijie-vpn-tanpa-static-ip",
+    "title": "VPN antar-cabang tanpa selalu membayar static IP.",
+    "description": "Dua pendekatan DDNS: hostname Ruijie atau domain perusahaan, dengan perhatian pada CGNAT, segmentasi, dan pengujian.",
+    "category": "Jaringan",
+    "status": "Architecture / PoC",
+    "url": "https://github.com/aaariel18/Ruijie-Multi-Site-VPN-Hemat-tanpa-Static-IP-dengan-DDNS-Easy-VPN",
+    "minutes": 4
+  },
+  {
+    "slug": "n8n-ai-purchase-order-automation",
+    "title": "AI membaca PO. Validasi tetap memegang kendali.",
+    "description": "Konsep otomasi Purchase Order dengan n8n, LLM, PostgreSQL, approval, dan audit trail yang dapat ditelusuri.",
+    "category": "Automasi",
+    "status": "Automation concept",
+    "url": "https://github.com/aaariel18/n8n-ai-po-automation",
+    "minutes": 3
+  },
+  {
+    "slug": "factorylens-observability-mesin-legacy",
+    "title": "Mesin lama tetap bisa punya cerita yang terbaca.",
+    "description": "FactoryLens menghubungkan konteks operator, sinyal mesin, dan rekaman bukti menjadi machine event timeline.",
+    "category": "Industrial IoT",
+    "status": "Pre-alpha",
+    "url": "https://github.com/aaariel18/factorylens",
+    "minutes": 3
+  }
+]
