@@ -6,12 +6,18 @@ Domain tujuan: https://edelweis.my.id
 ## Status dan lokasi
 
 Kode website tersedia di branch gh-pages repositori ini. Branch main dan seluruh
-dokumentasi asli tidak ditimpa atau dihapus. Penyimpanan kode dan file CNAME
-bukan bukti bahwa GitHub Pages sudah aktif atau DNS sudah diarahkan.
+dokumentasi asli tidak ditimpa atau dihapus.
 
-Aktivasi Pages dan pengaturan DNS membutuhkan administrator akun. Integrasi
-GitHub yang digunakan untuk menulis file tidak menyediakan perubahan pengaturan
-Pages atau pengelolaan DNS registrar. Belum ada klaim website publik aktif.
+Deployment GitHub Pages untuk commit 7505e3b07bdd1c17b72e0a453bb9319cd14ab3ae
+berhasil pada 21 September 2026. Job build, report-build-status, dan deploy
+semuanya success. Log deployment mencatat alamat http://edelweis.my.id/.
+
+Bukti: https://github.com/aaariel18/proxmox-disaster-recovery-lab/actions/runs/35556089362
+
+Status deployment berhasil tidak sama dengan verifikasi DNS/HTTPS. Akses publik
+melalui domain, propagasi DNS, dan sertifikat HTTPS belum berhasil diverifikasi
+dari lingkungan pemeriksaan. Pengelolaan DNS registrar tetap memerlukan akun
+pemilik. Integrasi GitHub yang digunakan tidak menyediakan pengelolaan DNS.
 
 ## Isi website
 
@@ -28,14 +34,17 @@ Artikel merupakan adaptasi editorial dokumentasi publik, bukan sinkronisasi
 real-time. Perubahan README sumber tidak otomatis mengubah artikel website.
 Tidak ada angka performa, penghematan, RPO/RTO, atau hasil field test yang dibuat.
 
-## Aktivasi GitHub Pages
+## Konfigurasi GitHub Pages dan domain
+
+Pages sudah menghasilkan deployment yang berhasil. Konfigurasi berikut menjadi
+referensi pemeriksaan atau pemulihan, bukan instruksi untuk membuat ulang situs:
 
 1. Buka https://github.com/aaariel18/proxmox-disaster-recovery-lab/settings/pages
 2. Build and deployment: Source = Deploy from a branch.
-3. Branch = gh-pages; Folder = /(root); klik Save.
-4. Pastikan Custom domain = edelweis.my.id; klik Save.
-5. Setelah domain terdaftar di Pages, atur record DNS di bawah.
-6. Setelah DNS dan sertifikat siap, aktifkan Enforce HTTPS.
+3. Branch = gh-pages; Folder = /(root).
+4. Custom domain = edelweis.my.id.
+5. Sesuaikan record DNS pada penyedia domain dengan tabel di bawah.
+6. Setelah DNS dan sertifikat siap, aktifkan Enforce HTTPS jika belum aktif.
 
 Jangan merge branch gh-pages ke main hanya untuk mengaktifkan website.
 
@@ -88,13 +97,13 @@ database, API key, atau proses build.
 
 File website berada di branch gh-pages. Artikel ada di artikel/; aset di assets/.
 Ketika menambah artikel, perbarui juga index.html, content-manifest.json,
-feed.xml, dan sitemap.xml. Publikasi perubahan branch dilakukan GitHub Pages
-setelah Pages diaktifkan sesuai langkah di atas.
+feed.xml, dan sitemap.xml. Perubahan branch gh-pages memicu publikasi Pages.
 
 README.md, docs/, dan images/ bawaan repositori dipertahankan. Jangan menghapus
 file asli untuk memperbarui website. Simpan credential di luar Git.
 
 ## Pengujian
 
-Lihat QA-REPORT.md untuk hasil dan batas pengujian offline. Pemeriksaan lokal
-bukan bukti bahwa DNS, HTTPS, dan website publik telah aktif.
+Lihat QA-REPORT.md untuk hasil dan batas pengujian offline. Build/deployment
+GitHub Pages sudah berhasil seperti bukti di atas. Pemeriksaan lokal dan
+keberhasilan deployment belum membuktikan DNS, HTTPS, dan akses publik domain.
